@@ -1,0 +1,468 @@
+---
+title: "Week-03-Notes"
+author: "Andrew Nalundasan"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Week 3 Overview Video
+
++ Easter egg references to 5140 & 5142 - ignore these
++ Wednesday noon Pacific office hours
++ Collaboration
+
+    + All about learning SQL
+    + Big fan of collaboration as long as you learn SQL and Mongo DB
+
++ SQL: 
+    
+    + Dates:
+        + '2022-04-06' format: 'YYYY-MM-DD'
+        + this is the true chronological way
+        + largest magnitude -> smallest magnitude YYYY-MM-DD-HH-MM-SS
+    + Concatenation:
+        + Prefer + rather than |
+    + CAST
+        + ensure column is the right data type
+    + Always start new query from correct DB you want
+        + Can also check the master DB (dropdown in top left) 
+    + Build queries in stages
+        + DateHired AS [Date Hired] -> Formats column headings 
+        
++ DTC
+
+    + Take a look at it now and think about it throughout other modules
+    + AdventureWorksDW2017 (Data Warehouse)
+        + NOT the same as AdventureWorks2017
+    + Test to see if I can access the DW
+    + DTC due Week 10 before final
+    + Groups OK: 3-4 people max
+    + Technical Report
+    + Executive Memo
+
+# Chp 7 SETS
+
+## 03-01-01 SETS
+
++ Dataset is the end result of a query
++ Dataset is the base element that we run analyses on 
++ Sets or Data Sets
+
+    + How we look at the world of data - what we see in a spreadsheet
+    + Single column of data
+    + Multiple columns from 1 table
+    + Multiple columns from multiple tables
+    + Table columns and calculated columns
+    
++ Queries return sets
+
+    + table columns 
+    + AND
+    + column created with expressions
+    + Rows are "members of a Set
+    + Simple and Complex data sets
+
++ Operations
+
+    **1. Intersection
+    2. DIfference
+    3. Union**
+
+## 03-01-02 INTERSECTION
+
++ Idea of looking at one or more datasets
++ Recipes with beef + Recipes with onions
+
+    + INTERSECTION <- recipes with BOTH beef and onions
+    + want to find the overlapping area and find the commonality
+    
++ Usage
+
+    + Combines one or more sets to create a new single set
+    + e.g. customers who purchased multiple kitchen items
+    
++ Commands
+
+    **1. INTERSECT
+    2. JOIN**
+    + INTERSECT Limitation:
+        + Sets being compared MUST have the EXACT SAME columns
+        
++ INTERSECT
+
+    1. SELECT DISTINCT OrderNumber  
+       FROM Order_Details
+       WHERE ProdCat = 'Bicycle'
+      
+       INTERSECT
+    
+    2. SELECT DISTINCT OrderNumber  
+       FROM Order_Details
+       WHERE ProdCat = 'Helmets'
+    + we want this to be a single list
+    
+    3. SELECT DISTINCT OrderNumber, OrderDate  
+       FROM Order_Details
+       WHERE ProdCat = 'Bicycle'
+       
+       INTERSECT
+       
+       SELECT DISTINCT OrderNumber  
+       FROM Order_Details
+       WHERE ProdCat = 'Helmets'
+       
+        + ^ This yields an ERROR because OrderDate is not in second query. MUST have SAME columns
+        + INTERSECT can't resolve problems like this
+    
+
+
+## 03-01-03 DIFFERENCE
+
++ This is about excluding items found int he dataset
+
++ Recipes with Beef but Not Onions
++ Recipes with Beef but No Onions or Carrots
++ Usage
+    
+    + Creating new set by eleminating matching items in other sets
+    + Customers who purchased kitchen items but not mixers
+    
++ Limitations
+
+    + Sets being compared must have the same columns
+    
++ EXCEPT
+
+    1. SELECT EqpID FROM
+       FROM Equipment
+      
+       EXCEPT
+      
+    2. SELECT EqpID FROM WorkOrders
+       WHERE IS NULL Closed Date
+       
+       + Returns ProductIDs that do NOT have a workorder
+       
+    3. Select CustomerKey FROM InternetSales
+       
+       EXCEPT
+       
+    4. SELECT CUstomerKey FROM Customers
+       WHERE CustomerGender = 'F';
+       
+       + Explicit exclusion which includes everything else
+
+## 03-01-04 UNION
+
++ Combining elements from multiple sets
++ Orders for a Bicycle or a Helmet
++ Usage
+
+    + Creates a new set by combining items in other sets
+    + Looking at a customers current AND historical sales
+    
++ Limitations
+
+    + Sets being compared MUST have the same columns
+    
++ Data Warehouse - retired data sits in DW to free up space in transactional DB
++ UNION
+
+    + join tables together 
+    + single list of contact details for all customers and suppliers
+        + Tables: CUSTOMER, SUPPLIER
+        + Need: single set of contact details from both details
+    + write 2 SELECT statements
+    
+    1. SELECT 'Customer' AS Type, FirstName + '' + LastName AS ContactName, City, Country, Phone
+       FROM Customer
+       
+       UNION
+       
+       SELECT 'Supplier' AS Type, ContactName, City, Country, Phone
+       FROM Supplier
+       
+          + created literal: 'Customer' and 'Supplier'
+          + Supplier table just uses "ContactName" since it was created in first query
+          + Columns must match exactly
+          + Use UNION to combine disparate data from separate tables to create 1 single dataset
+          
++ JOIN will help to avoid limitation of need "same columns" between tables
+
+# Chp 8 JOIN
+
+## JOIN Basics
+
++ Bring data together from multiple tables to create new datasets to have everything you need in an elegant way
+
++ List all employees and their managers who are in the Sales department
+
+    + people change jobs over time
+    + grab employee, find entry where they currently work, and compare in departments to see if they're on sales team, then find the manager
+    
++ JOIN options
+
+    + INNER JOIN
+    + LEFT OUTER JOIN, RIGHT OUTER JOIN
+    + FULL OUTER JOIN
+    + CROSS JOIN
+    
++ JOIN
+
+    + Linking of two tables or result sets
+    + Based on the intersection of specified columns
+    + Part of the FROM clause
+    + Legal
+        + Usually on PK and FK on two tables
+        + If not on PK or FK, **Join columns must have the same data type**
+            + must CAST as different data type if doing this
+    + INNER JOIN
+        + Creates a result set that contains mathes from 2 tables or data sets
+        + **BUT... only matches**
+        + makes sure return set is only information that is matching in both tables
+    + OUTER JOIN
+        + Creates a result set where one table's values are always listed and only matching data from the other table is included
+        + returns anything that matches, but always gives list from LEFT or RIGHT table (depending on LEFT or RIGHT OUTER JOIN)
+
+
+## INNER JOIN part 1
+
+## Assignments and midterm
+
++ Midterm exam - based off AdventureWorks DB
++ Focus on professionalism 
++ Structure queries in professional manner
+
+## Questions for Snodgrass - Office Hours Wednesday 4/13/2022 noon
+
+1. Need help understanding how to JOIN on matching values (# 5 on Sales Order DB)
+2. Need help understanding embedding SELECT statements
+3. Need help understanding embedding JOINS within JOINS
+4. In School Database, what does connection in Subject table that points to itself mean?
+5. Can you JOIN any table in any order as long as they have a direct connection / PK-FK relationship?
+5. Planning to team up with Jordan Gropper for DTC
+
++ Everything after the FROM is creating a temporary dataset. Run these chunks and see 
+
++ Finds matches between the tables or datasets
+    
+    + If a match is NOT found, the row(s) in both tables are filtered out
+    + will only return things that have an actual match
+    + List all employees and their titles
+    + SELECT **employees**.last_name, **titles**.title
+      FROM employees INNER JOIN titles ON
+      **employees**.emp_no = **titles**.emp_no;
+        + looking at emp_no for matches
+        + since comparing across multiple tables, need to dot.notation to explicitly show what table its referencing
+        
++ AdventureWorks
+
+    + Every person is assigned a BusinessEntityID
+        + Employee linked to Person via BusinessEntityID
+    + SELECT person.BusinessEntityId,
+      person.LastName,
+      HumanResources.Employee.JobTitle
+      FROM Person.Person INNER JOIN 
+      HumanResources.Employee ON
+      Person.BusinessEntityID = Employee.BusinessEntityID;
+
+
+## INNER JOIN part 2
+
++ joining multiple tables together
++ order is important
++ List all employees and their title and their salary
+
+    + SELECT e.last_name, t.title, s.salary
+      FROM (employees AS e 
+      INNER JOIN titles AS t 
+      ON e.emp_no = t.emp_no)
+      INNER JOIN saaries AS s
+      ON e.emp_no = s.emp_no;
+        + use letter.notation to represent the tables
+        + parantheses for order of precedence
+        + first table of sequence should be main table that you're getting data from
+        + will find every match from these 3 tables
+        + it's all based on the employee number ("emp_no")
+    + SELECT e.last_name, t.title, s.salary
+      FROM (employees AS e 
+      INNER JOIN titles AS t 
+      ON e.emp_no = t.emp_no)
+      INNER JOIN saaries AS s
+      ON e.emp_no = s.emp_no
+      WHERE IS NULL(s.to_date) AND
+      IS NULL(t.to_date)
+        + this returns this employee, current title, and current salary
+        + want to avoid getting all end results (all matches) - just need the CURRENT entry
+        
++ JOINS on Non-Key Fields
+
+    + Usually results in multiple entries
+    + Recommend using DISTINCT
+    + SELECT DISTINCT e.last_name, b.contact, v.birth_date
+      FROM employees as e
+      INNER JOIN customers as c
+      ON e.birth_date = c.birth_date;
+  
+
+# Chp 9 OUTER JOIN
+
++ JOIN - all about combining data between different tables and different datasets
++ grab information that exists between many differnt tables and bring it all together
++ INNER JOIN
+
+    + Creates a result set that contains matches from 2 tables or datasets
+    + **BUT... only matches**
+    + All about matching
+    
++ OUTER JOIN
+
+    + Creates a result set where one table's values are always listed and only matching data from the other table is included
+
+## OUTER JOIN Types
+
++ OUTER JOIN options
+
+    + LEFT OUTER JOIN
+        + Return everything from Table A (regardless of matches with Table B) and only matches from Table B
+    + RIGHT OUTER JOIN
+        + Return everything from Table B (regardless of matches with Table A) and only matches from Table A
+    + FULL OUTER JOIN
+        + Pick everything from Table A and Table B plus all matches
+        
+<br>
+
+![](SQL_Joins.png)
+
+
+## OUTER JOIN
+
++ List all employees and their titles
+
+    + All employees that actually have titles: INNER JOIN
+    + All employees with titles if not NULL: LEFT OUTER JOIN
+    + SELECT e.last_name, t.title
+      FROM employees AS e
+      INNER JOIN titles AS t
+      ON e.emp_no = t.emp_no;
+    + SELECT e.last_name, t.title
+      FROM employees AS e  # employees is left table
+      LEFT JOIN titles AS t  # titles is right table
+      ON e.emp_no = t.emp_no;  # based on matching employee number
+      
++ LEFT JOIN Questions
+
+    + All students and the classes they've registered for.
+    + All equipment and their output performance.
+    + All customers and their sales volume this year.
+    
+    + Datasets return ALL rows from one side, whether they have registerd or have performance data or made any purchases
+    
++ RIGHT OUTER JOIN
+
+    + SELECT e.last_name, t.title
+      FROM employees AS e
+      RIGHT JOIN titles AS t
+      ON e.emp_no = t.emp_no;
+    
+    + Returns ALL titles, whether someone is assigned to it or not
+    + Excludes employees that don't have titles
+
++ Practice in AdventureWorks2012
+
+## OUTER JOIN Exception
+
++ Allows us to ask and find exceptions
++ Sometimes need to comb thru dataset to find what's missing instead of what's there
+
++ Exception Questions:
+
+    + Which students have NOT registered for classes
+        + OUTER JOIN students to classes registerd to find NULL students
+    + All equipment missing output performance
+    + All customers without sales this year
+    + Employee titles not in use
+
+<br>
+
+![](Outer_Join_Exceptions.png)
+
++ Use LEFT and RIGHT OUTER JOINs with WHERE claus
+    
+    + Include "WHERE B.Key IS NULL" 
+        + Give me all data from Table A that have no match in Table B
+        
+    + SELECT e.emp_no, t.title
+      FROM employees AS e
+      RIGHT JOIN titles AS t
+      ON e.emp_no = t.emp_no
+      WHERE e.emp_NO IS NULL;
+        + Returns ALL titles where no one is assigned to them
+        
++ Practice in Adventure Works
+
+    + SELECT sp.BUsinessEntityID, sp.CommissionPct, sp.SalesYTD, sp.SalesLastYear, sp.Bonus,
+        st.TerritoryID, st.Name, st.[Group], st.SalesYTD
+      FROM Sales.SalesTerritory AS st
+      LEFT OUTER JOIN Sales.SalesTerritory AS st
+      ON st.TerritoryID = sp.TerritoryID
+      WHERE st.TerritoryID IS NULL
+      ORDER BY st.TerritoryID, sp.BusinessEntityID;
+
+## FULL OUTER JOIN
+
++ "the everything join" - combines all rows from both tables
++ NOT the same as UNION
+
+    + select 1 table and UNION with another table: this stacks Table A on top of Table B ON exactly matching set of columns
+    
++ employees with titles, employees without titles, and titles not assigned to any employees
++ Exceptions - things that do not match on either side
++ Usage
+
+    + For Data Warehouse processes, which often have complete rows with NULL columns
+        + Combining Sales data from each region
+    + For Exception Analysis
+        + Matches and Orphans
+        + **This is what Analysts would be interested in finding**
+    + To find rows not included in INNER JOINs
+        + Want to see everything and sort it by its exceptions
+        + Excellent way to know if you have all the data you're supposed to have
+        + Must be able to know what's NOT in the data is just as important as knowing what's IN the data
+        + Full Outer Join can be used to compare tables to know instantly if they have the same data in it
+    + Comparing to tables that should be the same
+
++ "Everything" Questions
+    
+    + All customers and suppliers
+        + SELECT c.FirstName, c.LastName, c.Country AS CustomerCountry,
+            s.Country AS SupplierCountry, s.CompanyName
+          FROM Customer AS c
+          FULL JOIN Supplier AS s
+          ON c.Country = s.Country
+          ORDER BY c.Country, s.Country;
+
++ Practice in AdventureWorks2012
+
+## OUTER JOIN Multiple Tables
+
++ List all employees and title with their salary (whether they have a title or a salary or not) 
+
+    + SELECT e.last_name, t.title, s.salary
+      FROM ((employees AS e
+      LEFT JOIN titles AS t  # full list of employees regardless of having a title or not
+        ON e.emp_no = t.emp_no)
+      LEFT JOIN salaries AS s
+        ON e.emp_no = s.emp_no)
+      WHERE ISNULL(s.to_date) AND
+        ISNULL(t.to_date)
+
